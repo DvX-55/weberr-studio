@@ -1,105 +1,94 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Weberr Studio</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weberr Studio | Création Sites & Apps</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="overlay-noise"></div>
-  <header class="site-header">
-    <a class="brand" href="#">Weberr Studio</a>
-    <nav class="nav">
-      <a href="#hero">Accueil</a>
-      <a href="#services">Services</a>
-      <a href="#portfolio">Portfolio</a>
-      <a href="#apps">Apps</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </header>
-
-  <main>
-    <section id="hero" class="hero section-transparent">
-      <div class="hero-grid">
-        <div class="hero-text">
-          <h1>Weberr Studio</h1>
-          <p>Développement web & applications Python — bots Discord/Telegram.</p>
-          <div class="hero-actions">
-            <a class="button primary" href="#contact">Demander un devis</a>
-            <a class="button secondary" href="#portfolio">Voir portfolio</a>
-          </div>
+    <!-- HERO -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1 class="title">WEBERR STUDIO</h1>
+            <p class="slogan">Sites web • Apps Python • Bots Discord & Telegram</p>
+            <div class="hero-buttons">
+                <a href="#portfolio" class="btn-primary">Voir mes créations</a>
+                <a href="#contact" class="btn-secondary">Me contacter</a>
+            </div>
         </div>
-        <div class="hero-card">
-          <h3>Offres</h3>
-          <ul>
-            <li>Site vitrine / e-commerce</li>
-            <li>App desktop Python</li>
-            <li>Bot Telegram et Discord</li>
-          </ul>
-        </div>
-      </div>
-    </section>
+        <div class="grain"></div>
+    </header>
 
+    <!-- À PROPOS -->
     <section id="about" class="section">
-      <h2>À propos</h2>
-      <p>Je suis David VOITIC, développeur freelance. J'accompagne les entrepreneurs et créateurs pour construire des projets solides, modernes, et évolutifs.</p>
+        <div class="container">
+            <h2>David VOITIC</h2>
+            <p class="bio">Développeur freelance de 17 ans passionné par la création de sites modernes et d'applications performantes. J'aime transformer tes idées en produits qui claquent.</p>
+        </div>
     </section>
 
+    <!-- SERVICES -->
     <section id="services" class="section">
-      <h2>Services</h2>
-      <div class="cards-grid">
-        <article class="card" data-animate>
-          <h3>Sites Web</h3>
-          <p>Conception de sites vitrines et e-commerce responsives, optimisés SEO, design pro.</p>
-        </article>
-        <article class="card" data-animate>
-          <h3>Applications Python</h3>
-          <p>Automatisation, outils desktop, scripts sur-mesure et productivité.</p>
-        </article>
-        <article class="card" data-animate>
-          <h3>Bots Discord & Telegram</h3>
-          <p>Déploiement de bot interactifs, commandes modules, notifications, modération.</p>
-        </article>
-      </div>
+        <div class="container">
+            <h2>Mes Services</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <h3>🌐 Sites Web</h3>
+                    <p>Design premium, ultra-rapide, optimisé SEO.</p>
+                </div>
+                <div class="service-card">
+                    <h3>🐍 Applications Python</h3>
+                    <p>Desktop, automatisations, outils sur mesure.</p>
+                </div>
+                <div class="service-card">
+                    <h3>🤖 Bots Discord & Telegram</h3>
+                    <p>Modération, jeux, automatisations, tout ce que tu veux.</p>
+                </div>
+            </div>
+        </div>
     </section>
 
+    <!-- PORTFOLIO VITRINES (max 3) -->
     <section id="portfolio" class="section">
-      <div class="section-header">
-        <h2>Portfolio Vitrines</h2>
-        <a class="link-btn" href="catalog-sites.html">Voir tout</a>
-      </div>
-      <div id="portfolio-grid" class="cards-grid"></div>
-      <p class="small-note">Les projets sont gérés via Sanity CMS.</p>
+        <div class="container">
+            <div class="section-header">
+                <h2>Portfolio Vitrines</h2>
+                <a href="catalog-sites.html" class="btn-link">Voir tout →</a>
+            </div>
+            <div id="portfolio-grid" class="projects-grid">
+                <!-- Rempli par JS plus tard -->
+            </div>
+        </div>
     </section>
 
+    <!-- APPS TÉLÉCHARGEABLES (max 3) -->
     <section id="apps" class="section">
-      <div class="section-header">
-        <h2>Apps téléchargeables</h2>
-        <a class="link-btn" href="catalog-apps.html">Voir tout</a>
-      </div>
-      <div id="apps-grid" class="cards-grid"></div>
-      <p class="small-note">Les applications sont gérées via Sanity CMS.</p>
+        <div class="container">
+            <div class="section-header">
+                <h2>Applications Téléchargeables</h2>
+                <a href="catalog-apps.html" class="btn-link">Voir tout →</a>
+            </div>
+            <div id="apps-grid" class="projects-grid">
+                <!-- Rempli par JS plus tard -->
+            </div>
+        </div>
     </section>
 
+    <!-- CONTACT -->
     <section id="contact" class="section">
-      <h2>Contact</h2>
-      <form id="contact-form" class="form-card">
-        <div class="form-row"><input type="text" name="name" placeholder="Nom" required /></div>
-        <div class="form-row"><input type="email" name="email" placeholder="Email" required /></div>
-        <div class="form-row"><textarea name="message" rows="4" placeholder="Message" required></textarea></div>
-        <button type="submit" class="button primary">Envoyer</button>
-        <p class="form-result" id="form-result"></p>
-      </form>
+        <div class="container">
+            <h2>Contact</h2>
+            <form id="contact-form">
+                <input type="text" placeholder="Ton nom" required>
+                <input type="email" placeholder="Ton email" required>
+                <textarea placeholder="Ton message" required></textarea>
+                <button type="submit" class="btn-primary">Envoyer le message</button>
+            </form>
+        </div>
     </section>
-  </main>
 
-  <footer class="footer">© 2026 Weberr Studio — Développé par David VOITIC</footer>
-
-  <script src="sanity-config.js"></script>
-  <script src="main.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>
