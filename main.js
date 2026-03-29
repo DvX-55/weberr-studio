@@ -1,115 +1,117 @@
-function getSanityUrl(query) {
-  const cfg = window.SANITY_CONFIG || {};
-  const dataset = cfg.dataset || "production";
-  const projectId = cfg.projectId;
-  const version = cfg.apiVersion || "2026-01-01";
-  const encoded = encodeURIComponent(query);
-  return `https://${projectId}.api.sanity.io/v${version}/data/query/${dataset}?query=${encoded}`;
+/* ═══════════════════════════════════════
+   WEBERR STUDIO — main.js
+   Interactions + Scroll Animations
+   (Sanity fetch ajouté à l'étape suivante)
+   ═══════════════════════════════════════ */
+
+/* ── CUSTOM CURSOR ── */
+const cursor    = document.getElementById('cursor');
+const cursorDot = document.getElementById('cursorDot');
+let mouseX = 0, mouseY = 0;
+let curX = 0, curY = 0;
+
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  cursorDot.style.left = mouseX + 'px';
+  cursorDot.style.top  = mouseY + 'px';
+});
+
+function animateCursor() {
+  curX += (mouseX - curX) * 0.12;
+  curY += (mouseY - curY) * 0.12;
+  cursor.style.left = curX + 'px';
+  cursor.style.top  = curY + 'px';
+  requestAnimationFrame(animateCursor);
 }
+animateCursor();
 
-async function fetchSanity(query) {
-  try {
-    const url = getSanityUrl(query);
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Fetch fail");
-    const data = await res.json();
-    return data.result || [];
-  } catch (err) {
-    console.error("Sanity fetch error", err);
-    return [];
+// Hover state on interactive elements
+document.querySelectorAll('a, button, .service-card, .project-card, .app-card').forEach(el => {
+  el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+  el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+});
+
+
+/* ── NAV — scroll shrink ── */
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 40);
+});
+
+
+/* ── BURGER MENU ── */
+const burger     = document.getElementById('burger');
+const mobileMenu = document.getElementById('mobileMenu');
+const mobLinks   = document.querySelectorAll('.mob-link');
+
+burger.addEventListener('click', () => {
+  mobileMenu.classList.toggle('open');
+  // Animate burger spans
+  const spans = burger.querySelectorAll('span');
+  if (mobileMenu.classList.contains('open')) {
+    spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+    spans[1].style.opacity   = '0';
+    spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
+    document.body.style.overflow = 'hidden';
+  } else {
+    spans.forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+    document.body.style.overflow = '';
   }
-}
+});
 
-function cardHtml(item, type) {
-  if (type === "site") {
-    const tags = item.tags ? item.tags.map((tag) => `<span class="tag">${tag}</span>`).join(" ") : "";
-    const imageBox = item.image && item.image.asset?.url ? `<div class="card-image" style="background-image: url('${item.image.asset.url}')"></div>` : "";
-    return `<article class="card" data-animate>
-      ${imageBox}
-      <h3>${item.titre || "Sans titre"}</h3>
-      <p>${item.description || "Aucune description"}</p>
-      <div class="tags">${tags}</div>
-      ${item.lien ? `<a class="button secondary" href="${item.lien}" target="_blank" rel="noreferrer">Visiter</a>` : ""}
-    </article>`;
-  }
+mobLinks.forEach(link => {
+  link.addEventListener('click', () => {
+    mobileMenu.classList.remove('open');
+    const spans = burger.querySelectorAll('span');
+    spans.forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+    document.body.style.overflow = '';
+  });
+});
 
-  const tagFree = item.gratuit ? "<strong>Gratuit</strong>" : "";
-  return `<article class="card" data-animate>
-      <h3>${item.nom || "Sans nom"} ${item.version ? `• ${item.version}` : ""}</h3>
-      <p>${item.description || "Aucune description"}</p>
-      <p>${item.icone ? `Icône: ${item.icone}` : ""} ${tagFree}</p>
-      <div class="card-links">
-        ${item.lienTelecharger ? `<a class="button secondary" href="${item.lienTelecharger}" target="_blank" rel="noreferrer">Télécharger</a>` : ""}
-        ${item.lienGitHub ? `<a class="button secondary" href="${item.lienGitHub}" target="_blank" rel="noreferrer">GitHub</a>` : ""}
-      </div>
-    </article>`;
-}
 
-function renderGrid(selector, items, type) {
-  const container = document.querySelector(selector);
-  if (!container) return;
-  if (!items || items.length === 0) {
-    container.innerHTML = `<p style="color:#94a3b8;">Aucun élément disponible pour le moment.</p>`;
-    return;
-  }
-  container.innerHTML = items.map((item) => cardHtml(item, type)).join("");
-  !window.__observerSetup && setupObserver();
-}
+/* ── SCROLL REVEAL (IntersectionObserver) ── */
+const revealEls = document.querySelectorAll('.fade-up, .reveal');
 
-function setupObserver() {
-  const obs = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("active");
-          obs.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.18 }
-  );
-  document.querySelectorAll("[data-animate]").forEach((el) => obs.observe(el));
-  window.__observerSetup = true;
-}
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      observer.unobserve(entry.target);
+    }
+  });
+}, {
+  threshold: 0.12,
+  rootMargin: '0px 0px -40px 0px'
+});
 
-async function loadPageData() {
-  const isCatalogSites = document.querySelector("#catalog-sites-grid");
-  const isCatalogApps = document.querySelector("#catalog-apps-grid");
+revealEls.forEach(el => observer.observe(el));
 
-  const siteQuery = `*[_type==\"sitePortfolio\"] | order(ordre asc){titre,description,lien,tags,image}`;
-  const appQuery = `*[_type==\"appSoftware\"] | order(ordre asc){nom,version,description,icone,lienTelecharger,lienGitHub,gratuit}`;
+// Trigger hero elements immediately (they're already visible)
+window.addEventListener('load', () => {
+  document.querySelectorAll('.hero .reveal').forEach((el, i) => {
+    setTimeout(() => el.classList.add('visible'), i * 120);
+  });
+});
 
-  const [sites, apps] = await Promise.all([fetchSanity(siteQuery), fetchSanity(appQuery)]);
 
-  if (document.querySelector("#portfolio-grid")) {
-    renderGrid("#portfolio-grid", sites.slice(0, 3), "site");
-  }
-  if (document.querySelector("#apps-grid")) {
-    renderGrid("#apps-grid", apps.slice(0, 3), "app");
-  }
+/* ── CONTACT FORM ── */
+const form        = document.getElementById('contactForm');
+const formSuccess = document.getElementById('formSuccess');
 
-  if (isCatalogSites) {
-    renderGrid("#catalog-sites-grid", sites, "site");
-  }
-  if (isCatalogApps) {
-    renderGrid("#catalog-apps-grid", apps, "app");
-  }
-}
+if (form) {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-function initForm() {
-  const form = document.querySelector("#contact-form");
-  const result = document.querySelector("#form-result");
-  if (!form || !result) return;
+    const btn  = form.querySelector('button[type="submit"]');
+    const span = btn.querySelector('span');
+    btn.disabled  = true;
+    span.textContent = 'Envoi en cours...';
 
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    result.textContent = "Message envoyé (fictif). Je te réponds bientôt par email !";
-    result.style.color = "#34d399";
-    form.reset();
+    // Simulated delay (remplace par ton vrai endpoint si besoin)
+    await new Promise(r => setTimeout(r, 1200));
+
+    form.style.display        = 'none';
+    formSuccess.classList.add('visible');
   });
 }
-
-window.addEventListener("DOMContentLoaded", () => {
-  loadPageData();
-  initForm();
-});
