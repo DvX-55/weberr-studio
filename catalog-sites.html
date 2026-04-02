@@ -3,30 +3,430 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Catalogues - Vitrines | Weberr Studio</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <title>Catalogue Vitrines — Weberr Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Catalog page extras ── */
+    .catalog-hero {
+      padding: 160px 0 64px;
+      position: relative;
+      overflow: hidden;
+    }
+    .catalog-hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse, rgba(140,16,255,.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .catalog-back {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: var(--font-mono); font-size: .78rem;
+      color: var(--text-muted); margin-bottom: 28px;
+      transition: color var(--t);
+    }
+    .catalog-back:hover { color: var(--accent); }
+
+    /* toolbar */
+    .toolbar {
+      display: flex; align-items: center; gap: 14px;
+      flex-wrap: wrap; margin-bottom: 36px;
+    }
+    .toolbar-search {
+      flex: 1; min-width: 220px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 11px 18px;
+      color: var(--text); font-size: .9rem; font-family: var(--font-mono);
+      outline: none; transition: border-color var(--t);
+    }
+    .toolbar-search:focus { border-color: var(--border-glow); }
+    .toolbar-search::placeholder { color: var(--text-faint); }
+    .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-pill {
+      padding: 7px 16px; border-radius: 100px;
+      border: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: .75rem; color: var(--text-muted);
+      cursor: pointer; background: transparent; transition: all var(--t);
+    }
+    .filter-pill:hover { border-color: var(--border-glow); color: var(--text); }
+    .filter-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* result count */
+    .result-count {
+      font-family: var(--font-mono); font-size: .78rem;
+      color: var(--text-muted); margin-bottom: 28px;
+    }
+    .result-count span { color: var(--accent); }
+
+    /* catalog grid — 3 cols desktop, 2 tablet, 1 mobile */
+    .catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      min-height: 200px;
+    }
+    @media (max-width: 960px) { .catalog-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .catalog-grid { grid-template-columns: 1fr; } }
+
+    /* site card */
+    .site-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+      display: flex; flex-direction: column;
+    }
+    .site-card:hover {
+      border-color: var(--border-glow);
+      transform: translateY(-5px);
+      box-shadow: var(--glow-shadow);
+    }
+    .site-card-thumb {
+      width: 100%; aspect-ratio: 16/9; object-fit: cover;
+      display: block; border-bottom: 1px solid var(--border);
+    }
+    .site-card-thumb-placeholder {
+      width: 100%; aspect-ratio: 16/9;
+      background: var(--bg-card-2);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .site-card-body { padding: 20px 22px 22px; flex: 1; display: flex; flex-direction: column; }
+    .site-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .site-card-title { font-size: 1.05rem; font-weight: 700; line-height: 1.3; }
+    .site-card-badges { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .badge-cat {
+      font-family: var(--font-mono); font-size: .65rem; color: var(--text-muted);
+      background: var(--bg-card-2); border: 1px solid var(--border);
+      padding: 2px 8px; border-radius: 100px; white-space: nowrap;
+    }
+    .site-card-desc {
+      font-size: .86rem; color: var(--text-muted); line-height: 1.6;
+      margin: 0 0 14px; flex: 1;
+    }
+    .site-card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+    .site-card-footer { display: flex; align-items: center; gap: 12px; margin-top: auto; }
+
+    /* gallery strip */
+    .gallery-strip {
+      display: flex; gap: 4px; overflow-x: auto;
+      padding: 0 0 6px; margin-bottom: 14px;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .gallery-strip img {
+      height: 52px; border-radius: 5px; object-fit: cover;
+      border: 1px solid var(--border); flex-shrink: 0;
+      cursor: pointer; transition: border-color var(--t);
+    }
+    .gallery-strip img:hover { border-color: var(--border-glow); }
+
+    /* lightbox */
+    .lightbox {
+      display: none; position: fixed; inset: 0; z-index: 2000;
+      background: rgba(8,8,15,.94); align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img {
+      max-width: 90vw; max-height: 85vh;
+      border-radius: 12px; border: 1px solid var(--border-glow);
+      box-shadow: 0 0 60px rgba(140,16,255,.3);
+    }
+    .lightbox-close {
+      position: fixed; top: 20px; right: 24px;
+      font-size: 2rem; color: var(--text-muted); cursor: pointer;
+      background: none; border: none; line-height: 1;
+      transition: color var(--t);
+    }
+    .lightbox-close:hover { color: var(--accent); }
+
+    /* empty / loading */
+    .catalog-empty {
+      grid-column: 1/-1; padding: 80px 20px; text-align: center;
+    }
+    .catalog-loading {
+      grid-column: 1/-1; padding: 80px 20px; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .spinner {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* statut */
+    .badge-statut {
+      font-family: var(--font-mono); font-size: .65rem;
+      padding: 2px 8px; border-radius: 100px; white-space: nowrap;
+    }
+  </style>
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="index.html">Weberr Studio</a>
-    <nav class="nav">
-      <a href="index.html#portfolio">Accueil</a>
-      <a href="index.html#contact">Contact</a>
-    </nav>
-  </header>
+
+  <!-- cursor -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
+
+  <!-- nav -->
+  <nav class="nav" id="nav">
+    <a href="index.html" class="nav-logo">
+      <span class="logo-bracket">[</span>Weberr<span class="logo-accent">_</span><span class="logo-bracket">]</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html#about">À propos</a></li>
+      <li><a href="index.html#services">Services</a></li>
+      <li><a href="index.html#portfolio">Portfolio</a></li>
+      <li><a href="index.html#apps">Apps</a></li>
+      <li><a href="index.html#contact" class="nav-cta">Me contacter</a></li>
+    </ul>
+    <button class="nav-burger" id="burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- mobile menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <ul>
+      <li><a href="index.html"          class="mob-link">Accueil</a></li>
+      <li><a href="index.html#portfolio" class="mob-link">Portfolio</a></li>
+      <li><a href="index.html#apps"      class="mob-link">Apps</a></li>
+      <li><a href="index.html#contact"   class="mob-link">Contact</a></li>
+    </ul>
+  </div>
+
+  <!-- lightbox -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">×</button>
+    <img id="lightboxImg" src="" alt="" />
+  </div>
 
   <main>
-    <section class="section">
-      <h1>Catalogue Vitrines</h1>
-      <p>Tous les projets disponibles depuis Sanity.</p>
-      <div id="catalog-sites-grid" class="cards-grid"></div>
-    </section>
+    <!-- ── HERO ── -->
+    <div class="catalog-hero">
+      <div class="container">
+        <a href="index.html#portfolio" class="catalog-back">← Retour accueil</a>
+        <div class="section-header" style="margin-bottom:36px;">
+          <div class="section-label"><span class="mono">// catalogue</span></div>
+          <h1 class="section-title">Sites <span class="accent">vitrines</span></h1>
+          <p class="section-sub">Tous les projets web disponibles — filtrez, cherchez, explorez.</p>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <input
+            type="text"
+            id="searchInput"
+            class="toolbar-search"
+            placeholder="Rechercher un site…"
+            autocomplete="off"
+          />
+          <div class="filter-pills" id="filterPills">
+            <button class="filter-pill active" data-cat="">Tout</button>
+            <button class="filter-pill" data-cat="vitrine">Vitrine</button>
+            <button class="filter-pill" data-cat="ecommerce">E-commerce</button>
+            <button class="filter-pill" data-cat="portfolio">Portfolio</button>
+            <button class="filter-pill" data-cat="blog">Blog</button>
+            <button class="filter-pill" data-cat="landing">Landing</button>
+            <button class="filter-pill" data-cat="webapp">Web App</button>
+          </div>
+        </div>
+
+        <div class="result-count" id="resultCount"></div>
+
+        <!-- Grid -->
+        <div class="catalog-grid" id="catalogGrid">
+          <div class="catalog-loading">
+            <div class="spinner"></div>
+            <span class="mono" style="color:var(--text-muted)">Chargement depuis Sanity…</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
-  <footer class="footer">© 2026 Weberr Studio</footer>
+  <!-- footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <span class="footer-copy mono">© 2026 Weberr Studio</span>
+        <span class="footer-made mono" style="color:var(--text-faint)">Géré via Sanity CMS</span>
+      </div>
+    </div>
+  </footer>
 
   <script src="sanity-config.js"></script>
   <script src="main.js"></script>
+  <script>
+  /* ══ CATALOG SITES — Sanity fetch + render ══ */
+  (function() {
+    var cfg = window.SANITY_CONFIG;
+    if (!cfg) return;
+
+    var API = 'https://' + cfg.projectId + '.api.sanity.io/v' + cfg.apiVersion + '/data/query/' + cfg.dataset;
+
+    var QUERY = encodeURIComponent(
+      '*[_type == "sitePortfolio"] | order(ordre asc) { _id, titre, description, "imageUrl": image.asset->url, "galerie": galerie[].asset->url, tags, categorie, statut, lien, ordre }'
+    );
+
+    var allSites   = [];
+    var activeFilter = '';
+    var searchVal    = '';
+
+    var grid        = document.getElementById('catalogGrid');
+    var countEl     = document.getElementById('resultCount');
+    var searchInput = document.getElementById('searchInput');
+    var pills       = document.querySelectorAll('.filter-pill');
+    var lightbox    = document.getElementById('lightbox');
+    var lightboxImg = document.getElementById('lightboxImg');
+    var lightboxClose = document.getElementById('lightboxClose');
+
+    // Lightbox
+    lightboxClose.addEventListener('click', function() { lightbox.classList.remove('open'); });
+    lightbox.addEventListener('click', function(e) { if (e.target === lightbox) lightbox.classList.remove('open'); });
+    function openLightbox(src) {
+      lightboxImg.src = src;
+      lightbox.classList.add('open');
+    }
+
+    // Filter pills
+    pills.forEach(function(pill) {
+      pill.addEventListener('click', function() {
+        pills.forEach(function(p) { p.classList.remove('active'); });
+        pill.classList.add('active');
+        activeFilter = pill.dataset.cat;
+        render();
+      });
+    });
+
+    // Search
+    searchInput.addEventListener('input', function() {
+      searchVal = searchInput.value.toLowerCase().trim();
+      render();
+    });
+
+    function imgUrl(url, w) {
+      if (!url) return '';
+      return url + '?w=' + (w || 800) + '&auto=format&fit=crop';
+    }
+
+    function statutBadge(s) {
+      var map = {
+        livre:    { label: 'Livré',    bg: 'rgba(74,222,128,.12)', color: '#4ade80' },
+        en_cours: { label: 'En cours', bg: 'rgba(250,204,21,.12)',  color: '#facc15' },
+        archive:  { label: 'Archivé',  bg: 'rgba(107,114,128,.12)', color: '#6b7280' }
+      };
+      var d = map[s] || map.livre;
+      return '<span class="badge-statut" style="background:' + d.bg + ';color:' + d.color + ';">' + d.label + '</span>';
+    }
+
+    var catLabels = {
+      vitrine: 'Site vitrine', ecommerce: 'E-commerce', portfolio: 'Portfolio',
+      blog: 'Blog', landing: 'Landing page', webapp: 'Web App'
+    };
+
+    function render() {
+      var filtered = allSites.filter(function(s) {
+        var matchCat = !activeFilter || s.categorie === activeFilter;
+        var haystack = ((s.titre || '') + ' ' + (s.description || '') + ' ' + ((s.tags || []).join(' '))).toLowerCase();
+        var matchSearch = !searchVal || haystack.indexOf(searchVal) !== -1;
+        return matchCat && matchSearch;
+      });
+
+      countEl.innerHTML = '<span>' + filtered.length + '</span> site' + (filtered.length !== 1 ? 's' : '');
+
+      if (!filtered.length) {
+        grid.innerHTML = '<div class="catalog-empty"><div class="empty-icon mono" style="font-size:2rem;margin-bottom:12px;">//</div><p style="color:var(--text-muted)">Aucun site ne correspond.</p></div>';
+        return;
+      }
+
+      grid.innerHTML = '';
+      filtered.forEach(function(site) {
+        var card = document.createElement('div');
+        card.className = 'site-card fade-up';
+
+        // Thumb
+        var thumbHtml = site.imageUrl
+          ? '<img class="site-card-thumb" src="' + imgUrl(site.imageUrl, 700) + '" alt="' + (site.titre || '') + '" loading="lazy">'
+          : '<div class="site-card-thumb-placeholder"><span style="font-size:2rem;">🌐</span><span class="mono" style="color:var(--text-faint);font-size:.72rem;">Pas d\'aperçu</span></div>';
+
+        // Gallery strip
+        var galleryHtml = '';
+        if (site.galerie && site.galerie.length) {
+          galleryHtml = '<div class="gallery-strip">';
+          site.galerie.forEach(function(url) {
+            galleryHtml += '<img src="' + imgUrl(url, 200) + '" alt="" data-full="' + imgUrl(url, 1400) + '">';
+          });
+          galleryHtml += '</div>';
+        }
+
+        // Tags
+        var tagsHtml = '';
+        if (site.tags && site.tags.length) {
+          site.tags.forEach(function(t) { tagsHtml += '<span class="tag">' + t + '</span>'; });
+        }
+
+        card.innerHTML = thumbHtml
+          + '<div class="site-card-body">'
+          + '<div class="site-card-header">'
+          + '<span class="site-card-title">' + (site.titre || 'Sans titre') + '</span>'
+          + '<div class="site-card-badges">'
+          + (site.categorie ? '<span class="badge-cat">' + (catLabels[site.categorie] || site.categorie) + '</span>' : '')
+          + (site.statut ? statutBadge(site.statut) : '')
+          + '</div>'
+          + '</div>'
+          + (site.description ? '<p class="site-card-desc">' + site.description + '</p>' : '')
+          + (tagsHtml ? '<div class="site-card-tags">' + tagsHtml + '</div>' : '')
+          + galleryHtml
+          + '<div class="site-card-footer">'
+          + (site.lien ? '<a href="' + site.lien + '" target="_blank" rel="noopener" class="btn btn-primary" style="font-size:.82rem;padding:9px 20px;">Voir le site →</a>' : '<span class="mono" style="color:var(--text-faint);font-size:.75rem;">Pas de lien</span>')
+          + '</div>'
+          + '</div>';
+
+        grid.appendChild(card);
+
+        // Observe for reveal animation
+        var ro = new IntersectionObserver(function(entries) {
+          entries.forEach(function(e) {
+            if (e.isIntersecting) { e.target.classList.add('visible'); ro.unobserve(e.target); }
+          });
+        }, { threshold: 0.08 });
+        ro.observe(card);
+
+        // Gallery lightbox clicks
+        card.querySelectorAll('.gallery-strip img').forEach(function(img) {
+          img.addEventListener('click', function() { openLightbox(img.dataset.full || img.src); });
+        });
+
+        // Thumb lightbox on click
+        var thumbEl = card.querySelector('.site-card-thumb');
+        if (thumbEl) {
+          thumbEl.style.cursor = 'zoom-in';
+          thumbEl.addEventListener('click', function() { openLightbox(imgUrl(site.imageUrl, 1400)); });
+        }
+
+        // Cursor hover
+        card.addEventListener('mouseenter', function() { document.body.classList.add('cursor-hover'); });
+        card.addEventListener('mouseleave', function() { document.body.classList.remove('cursor-hover'); });
+      });
+    }
+
+    // Fetch
+    fetch(API + '?query=' + QUERY)
+      .then(function(r) { return r.json(); })
+      .then(function(json) {
+        allSites = json.result || [];
+        render();
+      })
+      .catch(function(err) {
+        console.error('Sanity error:', err);
+        grid.innerHTML = '<div class="catalog-empty"><p style="color:var(--text-muted)">Impossible de charger les données Sanity.</p><p class="mono" style="color:var(--text-faint);font-size:.75rem;margin-top:8px;">Vérifiez que le dataset est public et que le projectId est correct.</p></div>';
+      });
+  })();
+  </script>
 </body>
 </html>

@@ -3,30 +3,492 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Catalogues - Apps | Weberr Studio</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <title>Catalogue Applications — Weberr Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── catalog hero ── */
+    .catalog-hero {
+      padding: 160px 0 64px;
+      position: relative; overflow: hidden;
+    }
+    .catalog-hero::before {
+      content: '';
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse, rgba(140,16,255,.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .catalog-back {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: var(--font-mono); font-size: .78rem;
+      color: var(--text-muted); margin-bottom: 28px; transition: color var(--t);
+    }
+    .catalog-back:hover { color: var(--accent); }
+
+    /* toolbar */
+    .toolbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 36px; }
+    .toolbar-search {
+      flex: 1; min-width: 220px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 11px 18px;
+      color: var(--text); font-size: .9rem; font-family: var(--font-mono);
+      outline: none; transition: border-color var(--t);
+    }
+    .toolbar-search:focus { border-color: var(--border-glow); }
+    .toolbar-search::placeholder { color: var(--text-faint); }
+    .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-pill {
+      padding: 7px 16px; border-radius: 100px;
+      border: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: .75rem; color: var(--text-muted);
+      cursor: pointer; background: transparent; transition: all var(--t);
+    }
+    .filter-pill:hover { border-color: var(--border-glow); color: var(--text); }
+    .filter-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .result-count { font-family: var(--font-mono); font-size: .78rem; color: var(--text-muted); margin-bottom: 28px; }
+    .result-count span { color: var(--accent); }
+
+    /* grid */
+    .catalog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; min-height: 200px; }
+    @media (max-width: 960px) { .catalog-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .catalog-grid { grid-template-columns: 1fr; } }
+
+    /* app card */
+    .app-card-full {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+      display: flex; flex-direction: column;
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+    }
+    .app-card-full:hover {
+      border-color: var(--border-glow);
+      transform: translateY(-5px);
+      box-shadow: var(--glow-shadow);
+    }
+
+    /* screenshot carousel */
+    .app-carousel { position: relative; background: var(--bg-card-2); }
+    .app-carousel-track {
+      display: flex; overflow: hidden;
+    }
+    .app-carousel-track img {
+      width: 100%; flex-shrink: 0;
+      aspect-ratio: 16/9; object-fit: cover;
+      display: block; cursor: zoom-in;
+    }
+    .app-carousel-placeholder {
+      width: 100%; aspect-ratio: 16/9;
+      background: var(--bg-card-2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem;
+    }
+    .carousel-dots {
+      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 5px;
+    }
+    .carousel-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,.3); cursor: pointer;
+      transition: background var(--t), transform var(--t);
+    }
+    .carousel-dot.active { background: var(--accent); transform: scale(1.3); }
+    .carousel-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(8,8,15,.7); border: 1px solid var(--border);
+      color: var(--text); width: 30px; height: 30px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: .9rem; transition: all var(--t);
+      opacity: 0;
+    }
+    .app-carousel:hover .carousel-nav { opacity: 1; }
+    .carousel-nav:hover { background: var(--accent); border-color: var(--accent); }
+    .carousel-nav.prev { left: 10px; }
+    .carousel-nav.next { right: 10px; }
+
+    /* card body */
+    .app-card-body { padding: 20px 22px 22px; flex: 1; display: flex; flex-direction: column; }
+    .app-card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+    .app-logo {
+      width: 52px; height: 52px; border-radius: 12px;
+      object-fit: contain; background: var(--bg-card-2);
+      border: 1px solid var(--border); flex-shrink: 0;
+    }
+    .app-emoji {
+      width: 52px; height: 52px; border-radius: 12px;
+      background: var(--accent-dim); border: 1px solid var(--border-glow);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; flex-shrink: 0;
+    }
+    .app-title-block {}
+    .app-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+    .app-name { font-size: 1.05rem; font-weight: 700; }
+    .app-desc {
+      font-size: .86rem; color: var(--text-muted); line-height: 1.6;
+      margin: 0 0 14px; flex: 1;
+    }
+    .app-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .app-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .meta-badge {
+      font-family: var(--font-mono); font-size: .67rem;
+      padding: 3px 9px; border-radius: 100px;
+      background: var(--bg-card-2); border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .meta-badge.free { color: #4ade80; background: rgba(74,222,128,.1); border-color: rgba(74,222,128,.2); }
+    .app-links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; }
+    .app-btn-gh {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 16px; border-radius: 8px;
+      border: 1px solid var(--border); color: var(--text-muted);
+      font-family: var(--font-mono); font-size: .78rem;
+      transition: all var(--t); background: transparent;
+    }
+    .app-btn-gh:hover { border-color: var(--border-glow); color: var(--text); }
+    .app-btn-dl {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 16px; border-radius: 8px;
+      background: var(--accent); color: #fff;
+      font-family: var(--font-mono); font-size: .78rem;
+      transition: all var(--t);
+    }
+    .app-btn-dl:hover { background: var(--accent-bright); transform: translateY(-1px); }
+
+    /* loading / empty */
+    .catalog-loading {
+      grid-column: 1/-1; padding: 80px 20px; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .spinner {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 2px solid var(--border); border-top-color: var(--accent);
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .catalog-empty { grid-column: 1/-1; padding: 80px 20px; text-align: center; }
+
+    /* lightbox */
+    .lightbox {
+      display: none; position: fixed; inset: 0; z-index: 2000;
+      background: rgba(8,8,15,.94); align-items: center; justify-content: center; padding: 24px;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img {
+      max-width: 90vw; max-height: 85vh; border-radius: 12px;
+      border: 1px solid var(--border-glow); box-shadow: 0 0 60px rgba(140,16,255,.3);
+    }
+    .lightbox-close {
+      position: fixed; top: 20px; right: 24px;
+      font-size: 2rem; color: var(--text-muted); cursor: pointer;
+      background: none; border: none; line-height: 1; transition: color var(--t);
+    }
+    .lightbox-close:hover { color: var(--accent); }
+  </style>
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="index.html">Weberr Studio</a>
-    <nav class="nav">
-      <a href="index.html#apps">Accueil</a>
-      <a href="index.html#contact">Contact</a>
-    </nav>
-  </header>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
+
+  <nav class="nav" id="nav">
+    <a href="index.html" class="nav-logo">
+      <span class="logo-bracket">[</span>Weberr<span class="logo-accent">_</span><span class="logo-bracket">]</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html#about">À propos</a></li>
+      <li><a href="index.html#services">Services</a></li>
+      <li><a href="index.html#portfolio">Portfolio</a></li>
+      <li><a href="index.html#apps">Apps</a></li>
+      <li><a href="index.html#contact" class="nav-cta">Me contacter</a></li>
+    </ul>
+    <button class="nav-burger" id="burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <ul>
+      <li><a href="index.html"          class="mob-link">Accueil</a></li>
+      <li><a href="index.html#portfolio" class="mob-link">Portfolio</a></li>
+      <li><a href="index.html#apps"      class="mob-link">Apps</a></li>
+      <li><a href="index.html#contact"   class="mob-link">Contact</a></li>
+    </ul>
+  </div>
+
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">×</button>
+    <img id="lightboxImg" src="" alt="" />
+  </div>
 
   <main>
-    <section class="section">
-      <h1>Catalogue Apps</h1>
-      <p>Toutes les applications Python et desktop publiées.</p>
-      <div id="catalog-apps-grid" class="cards-grid"></div>
-    </section>
+    <div class="catalog-hero">
+      <div class="container">
+        <a href="index.html#apps" class="catalog-back">← Retour accueil</a>
+
+        <div class="section-header" style="margin-bottom:36px;">
+          <div class="section-label"><span class="mono">// catalogue</span></div>
+          <h1 class="section-title">Apps <span class="accent">Python</span></h1>
+          <p class="section-sub">Tous les outils desktop et utilitaires publiés.</p>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <input
+            type="text"
+            id="searchInput"
+            class="toolbar-search"
+            placeholder="Rechercher une app…"
+            autocomplete="off"
+          />
+          <div class="filter-pills" id="filterPills">
+            <button class="filter-pill active" data-plat="">Tout</button>
+            <button class="filter-pill" data-plat="windows">Windows</button>
+            <button class="filter-pill" data-plat="macos">macOS</button>
+            <button class="filter-pill" data-plat="linux">Linux</button>
+            <button class="filter-pill" data-plat="cross">Cross-platform</button>
+            <button class="filter-pill" data-plat="web">Web</button>
+          </div>
+        </div>
+
+        <div class="result-count" id="resultCount"></div>
+
+        <div class="catalog-grid" id="catalogGrid">
+          <div class="catalog-loading">
+            <div class="spinner"></div>
+            <span class="mono" style="color:var(--text-muted)">Chargement depuis Sanity…</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
-  <footer class="footer">© 2026 Weberr Studio</footer>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <span class="footer-copy mono">© 2026 Weberr Studio</span>
+        <span class="footer-made mono" style="color:var(--text-faint)">Géré via Sanity CMS</span>
+      </div>
+    </div>
+  </footer>
 
   <script src="sanity-config.js"></script>
   <script src="main.js"></script>
+  <script>
+  /* ══ CATALOG APPS — Sanity fetch + render ══ */
+  (function() {
+    var cfg = window.SANITY_CONFIG;
+    if (!cfg) return;
+
+    var API = 'https://' + cfg.projectId + '.api.sanity.io/v' + cfg.apiVersion + '/data/query/' + cfg.dataset;
+
+    var QUERY = encodeURIComponent(
+      '*[_type == "appSoftware"] | order(ordre asc) { _id, nom, version, description, icone, "logoUrl": logo.asset->url, "screenshots": screenshots[].asset->url, techStack, plateforme, lienTelecharger, lienGitHub, gratuit, ordre }'
+    );
+
+    var allApps      = [];
+    var activeFilter = '';
+    var searchVal    = '';
+
+    var grid        = document.getElementById('catalogGrid');
+    var countEl     = document.getElementById('resultCount');
+    var searchInput = document.getElementById('searchInput');
+    var pills       = document.querySelectorAll('.filter-pill');
+    var lightbox    = document.getElementById('lightbox');
+    var lightboxImg = document.getElementById('lightboxImg');
+    var lightboxClose = document.getElementById('lightboxClose');
+
+    // Lightbox
+    lightboxClose.addEventListener('click', function() { lightbox.classList.remove('open'); });
+    lightbox.addEventListener('click', function(e) { if (e.target === lightbox) lightbox.classList.remove('open'); });
+
+    function openLightbox(src) { lightboxImg.src = src; lightbox.classList.add('open'); }
+
+    // Filter pills
+    pills.forEach(function(pill) {
+      pill.addEventListener('click', function() {
+        pills.forEach(function(p) { p.classList.remove('active'); });
+        pill.classList.add('active');
+        activeFilter = pill.dataset.plat;
+        render();
+      });
+    });
+
+    searchInput.addEventListener('input', function() {
+      searchVal = searchInput.value.toLowerCase().trim();
+      render();
+    });
+
+    function imgUrl(url, w) {
+      if (!url) return '';
+      return url + '?w=' + (w || 800) + '&auto=format&fit=crop';
+    }
+
+    var platLabels = {
+      windows: 'Windows', macos: 'macOS', linux: 'Linux',
+      cross: 'Cross-platform', web: 'Web'
+    };
+
+    /* ── Build one app card DOM element ── */
+    function buildCard(app) {
+      var card = document.createElement('div');
+      card.className = 'app-card-full fade-up';
+
+      /* --- Screenshot carousel --- */
+      var shots = app.screenshots || [];
+      var carouselHtml = '';
+      if (shots.length === 0) {
+        carouselHtml = '<div class="app-carousel"><div class="app-carousel-placeholder">' + (app.icone || '📦') + '</div></div>';
+      } else if (shots.length === 1) {
+        carouselHtml = '<div class="app-carousel"><div class="app-carousel-track"><img src="' + imgUrl(shots[0], 700) + '" alt="" data-full="' + imgUrl(shots[0], 1400) + '" loading="lazy"></div></div>';
+      } else {
+        var trackHtml = '';
+        shots.forEach(function(s) {
+          trackHtml += '<img src="' + imgUrl(s, 700) + '" alt="" data-full="' + imgUrl(s, 1400) + '" loading="lazy">';
+        });
+        var dotsHtml = '';
+        shots.forEach(function(_, i) {
+          dotsHtml += '<div class="carousel-dot' + (i === 0 ? ' active' : '') + '" data-i="' + i + '"></div>';
+        });
+        carouselHtml = '<div class="app-carousel">'
+          + '<div class="app-carousel-track" id="track_' + app._id + '">' + trackHtml + '</div>'
+          + '<button class="carousel-nav prev" data-dir="-1">‹</button>'
+          + '<button class="carousel-nav next" data-dir="1">›</button>'
+          + '<div class="carousel-dots">' + dotsHtml + '</div>'
+          + '</div>';
+      }
+
+      /* --- Logo / emoji --- */
+      var logoHtml = app.logoUrl
+        ? '<img class="app-logo" src="' + imgUrl(app.logoUrl, 104) + '" alt="">'
+        : '<div class="app-emoji">' + (app.icone || '📦') + '</div>';
+
+      /* --- Tech tags --- */
+      var tagsHtml = '';
+      if (app.techStack && app.techStack.length) {
+        app.techStack.forEach(function(t) { tagsHtml += '<span class="tag">' + t + '</span>'; });
+      }
+
+      /* --- Meta badges --- */
+      var metaHtml = '';
+      if (app.gratuit) metaHtml += '<span class="meta-badge free">// gratuit</span>';
+      if (app.version) metaHtml += '<span class="meta-badge">' + app.version + '</span>';
+      if (app.plateforme) metaHtml += '<span class="meta-badge">' + (platLabels[app.plateforme] || app.plateforme) + '</span>';
+
+      /* --- Links --- */
+      var linksHtml = '';
+      if (app.lienGitHub) {
+        linksHtml += '<a href="' + app.lienGitHub + '" target="_blank" rel="noopener" class="app-btn-gh">'
+          + '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>'
+          + 'GitHub</a>';
+      }
+      if (app.lienTelecharger) {
+        linksHtml += '<a href="' + app.lienTelecharger + '" target="_blank" rel="noopener" class="app-btn-dl">'
+          + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
+          + 'Télécharger</a>';
+      }
+
+      card.innerHTML = carouselHtml
+        + '<div class="app-card-body">'
+        + '<div class="app-card-header">'
+        + logoHtml
+        + '<div class="app-title-block">'
+        + '<div class="app-name-row"><span class="app-name">' + (app.nom || 'Application') + '</span></div>'
+        + (metaHtml ? '<div class="app-meta">' + metaHtml + '</div>' : '')
+        + '</div>'
+        + '</div>'
+        + (app.description ? '<p class="app-desc">' + app.description + '</p>' : '')
+        + (tagsHtml ? '<div class="app-tags">' + tagsHtml + '</div>' : '')
+        + (linksHtml ? '<div class="app-links">' + linksHtml + '</div>' : '')
+        + '</div>';
+
+      return card;
+    }
+
+    /* ── Wire up carousel + lightbox after insertion ── */
+    function wireCard(card, app) {
+      var shots = app.screenshots || [];
+
+      // Lightbox on single or track images
+      card.querySelectorAll('.app-carousel-track img').forEach(function(img) {
+        img.addEventListener('click', function() { openLightbox(img.dataset.full || img.src); });
+      });
+
+      // Carousel navigation
+      if (shots.length > 1) {
+        var track = card.querySelector('.app-carousel-track');
+        var dots  = card.querySelectorAll('.carousel-dot');
+        var current = 0;
+
+        function goTo(i) {
+          current = (i + shots.length) % shots.length;
+          track.style.transform = 'translateX(-' + (current * 100) + '%)';
+          track.style.transition = 'transform .3s ease';
+          dots.forEach(function(d, di) { d.classList.toggle('active', di === current); });
+        }
+
+        card.querySelectorAll('.carousel-nav').forEach(function(btn) {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            goTo(current + parseInt(btn.dataset.dir));
+          });
+        });
+
+        dots.forEach(function(dot) {
+          dot.addEventListener('click', function() { goTo(parseInt(dot.dataset.i)); });
+        });
+      }
+
+      // Cursor hover
+      card.addEventListener('mouseenter', function() { document.body.classList.add('cursor-hover'); });
+      card.addEventListener('mouseleave', function() { document.body.classList.remove('cursor-hover'); });
+
+      // Scroll reveal
+      var ro = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+          if (e.isIntersecting) { e.target.classList.add('visible'); ro.unobserve(e.target); }
+        });
+      }, { threshold: 0.08 });
+      ro.observe(card);
+    }
+
+    function render() {
+      var filtered = allApps.filter(function(app) {
+        var matchPlat = !activeFilter || app.plateforme === activeFilter;
+        var haystack = ((app.nom || '') + ' ' + (app.description || '') + ' ' + ((app.techStack || []).join(' '))).toLowerCase();
+        var matchSearch = !searchVal || haystack.indexOf(searchVal) !== -1;
+        return matchPlat && matchSearch;
+      });
+
+      countEl.innerHTML = '<span>' + filtered.length + '</span> application' + (filtered.length !== 1 ? 's' : '');
+
+      if (!filtered.length) {
+        grid.innerHTML = '<div class="catalog-empty"><div class="empty-icon mono" style="font-size:2rem;margin-bottom:12px;">//</div><p style="color:var(--text-muted)">Aucune app ne correspond.</p></div>';
+        return;
+      }
+
+      grid.innerHTML = '';
+      filtered.forEach(function(app) {
+        var card = buildCard(app);
+        grid.appendChild(card);
+        wireCard(card, app);
+      });
+    }
+
+    // Fetch
+    fetch(API + '?query=' + QUERY)
+      .then(function(r) { return r.json(); })
+      .then(function(json) {
+        allApps = json.result || [];
+        render();
+      })
+      .catch(function(err) {
+        console.error('Sanity error:', err);
+        grid.innerHTML = '<div class="catalog-empty"><p style="color:var(--text-muted)">Impossible de charger les données Sanity.</p><p class="mono" style="color:var(--text-faint);font-size:.75rem;margin-top:8px;">Vérifiez que le dataset est public et que le projectId est correct.</p></div>';
+      });
+  })();
+  </script>
 </body>
 </html>
